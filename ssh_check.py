@@ -26,7 +26,7 @@ time_now = timestr.strftime("%X")
 time_stamp = date + ' ' + time_now
 
 url = 'https://notify-api.line.me/api/notify'
-token = 'xoQZ0Qaq5e0lf4eFraNNs7bOVwOioE9YyNNq8zqBLjw' #<-- Token line
+token = 'Line token' #<-- Token line
 headers = {'content-type':'application/x-www-form-urlencoded','Authorization':'Bearer '+token}
 
 def fetch_db():
@@ -133,7 +133,7 @@ async def ping(host):
             await asyncio.create_task(disable_host(ip_))
             await asyncio.sleep(0.1)
         else:
-            await asyncio.create_subprocess_shell(f"curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer xoQZ0Qaq5e0lf4eFraNNs7bOVwOioE9YyNNq8zqBLjw' -F 'message={host} SSH ไม่ได้'")
+            await asyncio.create_subprocess_shell(f"curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer line token' -F 'message={host} SSH ไม่ได้'")
             pass
     else:
         print(host + " | Not Online")
