@@ -123,4 +123,4 @@ print('-----------------------------------------------')
     #    requests.post(url, headers=headers, data = {'message':msg})
     #else:
     #    pass
-#curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer xoQZ0Qaq5e0lf4eFraNNs7bOVwOioE9YyNNq8zqBLjw' -F 'message=test'
+#curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer line token' -F 'message=test'
