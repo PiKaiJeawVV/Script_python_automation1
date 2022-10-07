@@ -133,6 +133,11 @@ async def ping(host):
             await asyncio.create_task(disable_host(ip_))
             await asyncio.sleep(0.1)
         else:
+            select_ = await asyncio.create_task(select_db(host))
+            for id_,ip_ in zip(select_[0],select_[1]): 0
+            await asyncio.sleep(0.1)
+            await asyncio.create_task(update_db(id_))
+            await asyncio.sleep(0.1)
             await asyncio.create_subprocess_shell(f"curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer line token' -F 'message={host} SSH ไม่ได้'")
             pass
     else:
