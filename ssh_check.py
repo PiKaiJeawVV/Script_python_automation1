@@ -14,8 +14,8 @@ t1 = time.time()
 django_db = mysql.connector.connect(host="172.18.0.2",user="root",password="benz4466",database="django_db")
 query_db = django_db.cursor()
 
-db_cacti = mysql.connector.connect(host="10.1.0.50",user="admin",password="1qaz2wsx",database="automation")
-exec_command = db_cacti.cursor()
+db_automation = mysql.connector.connect(host="127.0.0.1",user="admin",password="1qaz2wsx",database="automation")
+exec_command = db_automation.cursor()
 
 
 ip_list = ['www.google.com','8.8.8.8','8.8.4.4']
@@ -26,7 +26,7 @@ time_now = timestr.strftime("%X")
 time_stamp = date + ' ' + time_now
 
 url = 'https://notify-api.line.me/api/notify'
-token = 'Line token' #<-- Token line
+token = 'xoQZ0Qaq5e0lf4eFraNNs7bOVwOioE9YyNNq8zqBLjw' #<-- Token line
 headers = {'content-type':'application/x-www-form-urlencoded','Authorization':'Bearer '+token}
 
 def fetch_db():
@@ -58,7 +58,7 @@ async def select_db(_get):
     return id_list,ip_list,status_list
 
 async def get_host(_get):
-    exec_command.execute(f"select * from automation_ros_host where status = 000 and host_ros = '{_get}';")
+    exec_command.execute(f"select * from fontweb_ros_host where status = 000 and host_ros = '{_get}';")
     id_list = []
     ip_list = []
     for firsh_fetch in exec_command:
@@ -81,8 +81,8 @@ async def insert_still_problem(_get):
     django_db.commit()
 
 async def disable_host(_get):
-    exec_command.execute(f"update automation_ros_host set status = '001' where host_ros = '{_get}';")
-    db_cacti.commit()
+    exec_command.execute(f"update fontweb_ros_host set status = '001' where host_ros = '{_get}';")
+    db_automation.commit()
 
 async def sshros(_get):
     try:
@@ -95,6 +95,7 @@ async def sshros(_get):
         for output_from_stdout in stdout:
             output_from_stdout.strip()
         output_ = output_from_stdout
+        print(output_)
         output_check = r"(ms)"
         if re.search(output_check, output_):
             result = '1'
@@ -115,33 +116,48 @@ async def ping(host):
         if result_[0] == '1':
             select_ = await asyncio.create_task(select_db(host))
             for id_,ip_ in zip(select_[0],select_[1]): 0
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             await asyncio.create_task(update_db(id_))
             #await asyncio.sleep(0.1)
             #await asyncio.create_task(insert_finish(ip_))
         elif result_[0] == '2':
             select_ = await asyncio.create_task(select_db(host))
             for id_,ip_ in zip(select_[0],select_[1]): 0
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             await asyncio.create_task(update_db(id_))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             await asyncio.create_task(insert_still_problem(ip_))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             select_host = await asyncio.create_task(get_host(host))
             for id_,ip_ in zip(select_host[0],select_host[1]): 0
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             await asyncio.create_task(disable_host(ip_))
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
         else:
             select_ = await asyncio.create_task(select_db(host))
             for id_,ip_ in zip(select_[0],select_[1]): 0
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.3)
             await asyncio.create_task(update_db(id_))
-            await asyncio.sleep(0.1)
-            await asyncio.create_subprocess_shell(f"curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer line token' -F 'message={host} SSH ไม่ได้'")
+            await asyncio.sleep(0.3)
+            await asyncio.create_subprocess_shell(f"curl -X POST https://notify-api.line.me/api/notify -H 'Authorization: Bearer xoQZ0Qaq5e0lf4eFraNNs7bOVwOioE9YyNNq8zqBLjw' -F 'message={host} SSH ไม่ได้'")
             pass
     else:
         print(host + " | Not Online")
+        ping_again = await asyncio.create_subprocess_shell("ping -c 1 " + host + " > /dev/null 2>&1")
+        await ping_again.wait()
+        if ping_again.returncode != 0:
+            print("Check again " + host + " | Offline")
+            select_ = await asyncio.create_task(select_db(host))
+            for id_,ip_ in zip(select_[0],select_[1]): 0
+            await asyncio.sleep(0.3)
+            await asyncio.create_task(update_db(id_))
+            await asyncio.sleep(0.3)
+            await asyncio.create_task(disable_host(ip_))
+            await asyncio.sleep(0.3)
+            await asyncio.create_task(insert_still_problem(ip_))
+            await asyncio.sleep(0.3)
+        else:
+            pass
     return 
 
 async def ping_all(_get):
@@ -155,8 +171,11 @@ if __name__ == '__main__':
     result0 = keep[0]
     result1 = keep[1]
     result2 = keep[2]
+    print(result0)
+    print(result1)
+    print(result2)
     asyncio.run(ping_all(result1))
     t2 = time.time() - t1
     print(f"{t2:0.2f} {time_stamp}")
     django_db.close()
-    db_cacti.close()
+    db_automation.close()
